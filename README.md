@@ -28,7 +28,7 @@ flowchart TD
     F -->|Console Log| G[Console]
     F -->|Webhook| H[External Service]
     F -->|Custom Handler| I[Custom Alert]
-    
+
     style B fill:#f96,stroke:#333,stroke-width:2px
     style C fill:#9cf,stroke:#333,stroke-width:2px
     style F fill:#f9c,stroke:#333,stroke-width:2px
@@ -50,17 +50,17 @@ pnpm add next-limitr
 
 ```typescript
 // pages/api/example.ts
-import { rateLimiter } from 'next-limitr';
+import { rateLimiter } from "next-limitr";
 
 // Create a rate limiter middleware that allows 5 requests per minute
 const limiter = rateLimiter({
   maxRequests: 5,
-  windowMs: '1m',
+  windowMs: "1m",
 });
 
 async function handler(req, res) {
   // Your API logic here
-  res.status(200).json({ message: 'Hello World' });
+  res.status(200).json({ message: "Hello World" });
 }
 
 // Apply the rate limiter to the handler
@@ -71,13 +71,13 @@ export default limiter(handler);
 
 ```typescript
 // middleware.ts
-import { NextResponse } from 'next/server';
-import { edgeRateLimiter } from 'next-limitr';
+import { NextResponse } from "next/server";
+import { edgeRateLimiter } from "next-limitr";
 
 // Create a rate limiter for Edge runtime
 const limiter = edgeRateLimiter({
   maxRequests: 20,
-  windowMs: '1m',
+  windowMs: "1m",
 });
 
 export async function middleware(req) {
@@ -86,7 +86,7 @@ export async function middleware(req) {
 
 // Apply only to API routes
 export const config = {
-  matcher: '/api/:path*',
+  matcher: "/api/:path*",
 };
 ```
 
@@ -99,11 +99,11 @@ sequenceDiagram
     participant Storage as Storage Backend
     participant NextHandler as Next.js Handler
     participant Alerting as Alerting System
-    
+
     Client->>Middleware: HTTP Request
     Middleware->>Storage: Check Rate Limit (key=IP)
     Storage->>Middleware: Return Current Count
-    
+
     alt Count < Max Requests
         Middleware->>Storage: Increment Counter
         Middleware->>NextHandler: Forward Request
@@ -111,7 +111,7 @@ sequenceDiagram
     else Count >= Max Requests
         Middleware->>Alerting: Record Breach
         Middleware->>Client: 429 Too Many Requests
-        
+
         alt Breach Threshold Reached
             Alerting->>Alerting: Trigger Alert
         end
@@ -122,27 +122,27 @@ sequenceDiagram
 
 ### Rate Limiter Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `maxRequests` | `number` | `100` | Maximum number of requests allowed within the window |
-| `windowMs` | `number \| string` | `60000` | Time window in milliseconds or string (e.g., '1m', '1h') |
-| `message` | `string` | `'Too many requests, please try again later.'` | Custom message for rate limit exceeded response |
-| `statusCode` | `number` | `429` | HTTP status code for rate limit exceeded response |
-| `headers` | `boolean` | `true` | Whether to add rate limit headers to responses |
-| `keyGenerator` | `Function` | IP-based | Function to generate a unique identifier for each request |
-| `store` | `RateLimitStore` | `MemoryStore` | Custom storage implementation |
-| `skip` | `Function` | `undefined` | Function to determine if rate limiting should be skipped |
-| `alerting` | `AlertingOptions` | `undefined` | Options for alerting on rate limit breaches |
+| Option         | Type               | Default                                        | Description                                               |
+| -------------- | ------------------ | ---------------------------------------------- | --------------------------------------------------------- |
+| `maxRequests`  | `number`           | `100`                                          | Maximum number of requests allowed within the window      |
+| `windowMs`     | `number \| string` | `60000`                                        | Time window in milliseconds or string (e.g., '1m', '1h')  |
+| `message`      | `string`           | `'Too many requests, please try again later.'` | Custom message for rate limit exceeded response           |
+| `statusCode`   | `number`           | `429`                                          | HTTP status code for rate limit exceeded response         |
+| `headers`      | `boolean`          | `true`                                         | Whether to add rate limit headers to responses            |
+| `keyGenerator` | `Function`         | IP-based                                       | Function to generate a unique identifier for each request |
+| `store`        | `RateLimitStore`   | `MemoryStore`                                  | Custom storage implementation                             |
+| `skip`         | `Function`         | `undefined`                                    | Function to determine if rate limiting should be skipped  |
+| `alerting`     | `AlertingOptions`  | `undefined`                                    | Options for alerting on rate limit breaches               |
 
 ### Alerting Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `threshold` | `number` | `5` | Number of breaches before an alert is triggered |
-| `windowMs` | `number \| string` | `60000` | Time window for counting breaches |
-| `consoleLog` | `boolean` | `true` | Whether to log alerts to the console |
-| `webhookUrl` | `string` | `''` | URL to send webhook alerts to |
-| `handler` | `Function` | `undefined` | Custom function to handle alerts |
+| Option       | Type               | Default     | Description                                     |
+| ------------ | ------------------ | ----------- | ----------------------------------------------- |
+| `threshold`  | `number`           | `5`         | Number of breaches before an alert is triggered |
+| `windowMs`   | `number \| string` | `60000`     | Time window for counting breaches               |
+| `consoleLog` | `boolean`          | `true`      | Whether to log alerts to the console            |
+| `webhookUrl` | `string`           | `''`        | URL to send webhook alerts to                   |
+| `handler`    | `Function`         | `undefined` | Custom function to handle alerts                |
 
 ## Storage Adapters
 
@@ -157,11 +157,11 @@ classDiagram
         +resetKey(key)
         +resetAll()
     }
-    
+
     MemoryStore --|> RateLimitStore
     RedisStore --|> RateLimitStore
     CustomStore --|> RateLimitStore
-    
+
     class MemoryStore {
         -store: Map
         +increment(key, windowMs)
@@ -169,7 +169,7 @@ classDiagram
         +resetKey(key)
         +resetAll()
     }
-    
+
     class RedisStore {
         -client: RedisClient
         -prefix: string
@@ -178,7 +178,7 @@ classDiagram
         +resetKey(key)
         +resetAll()
     }
-    
+
     class CustomStore {
         +increment(key, windowMs)
         +decrement(key)
@@ -192,13 +192,13 @@ classDiagram
 Suitable for single-instance deployments or development environments.
 
 ```typescript
-import { rateLimiter, MemoryStore } from 'next-limitr';
+import { rateLimiter, MemoryStore } from "next-limitr";
 
 const store = new MemoryStore();
 const limiter = rateLimiter({
   maxRequests: 10,
-  windowMs: '1m',
-  store: store
+  windowMs: "1m",
+  store: store,
 });
 ```
 
@@ -207,23 +207,23 @@ const limiter = rateLimiter({
 Recommended for production deployments with multiple instances.
 
 ```typescript
-import { rateLimiter, RedisStore } from 'next-limitr';
-import Redis from 'ioredis';
+import { rateLimiter, RedisStore } from "next-limitr";
+import Redis from "ioredis";
 
 const redisClient = new Redis({
-  host: 'localhost',
-  port: 6379
+  host: "localhost",
+  port: 6379,
 });
 
 const store = new RedisStore({
   client: redisClient,
-  prefix: 'rate-limit:'
+  prefix: "rate-limit:",
 });
 
 const limiter = rateLimiter({
   maxRequests: 100,
-  windowMs: '1m',
-  store: store
+  windowMs: "1m",
+  store: store,
 });
 ```
 
@@ -232,15 +232,15 @@ const limiter = rateLimiter({
 ### Custom Key Generator
 
 ```typescript
-import { rateLimiter } from 'next-limitr';
+import { rateLimiter } from "next-limitr";
 
 // Rate limit based on a combination of IP and user agent
 const limiter = rateLimiter({
   maxRequests: 10,
-  windowMs: '1m',
+  windowMs: "1m",
   keyGenerator: (req) => {
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const userAgent = req.headers['user-agent'] || 'unknown';
+    const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    const userAgent = req.headers["user-agent"] || "unknown";
     return `${ip}-${userAgent}`;
   },
 });
@@ -249,15 +249,15 @@ const limiter = rateLimiter({
 ### Skip Rate Limiting
 
 ```typescript
-import { rateLimiter } from 'next-limitr';
+import { rateLimiter } from "next-limitr";
 
 // Skip rate limiting for authenticated users
 const limiter = rateLimiter({
   maxRequests: 5,
-  windowMs: '1m',
+  windowMs: "1m",
   skip: (req) => {
     // Skip for admin users
-    return req.headers.authorization === 'Bearer admin-token';
+    return req.headers.authorization === "Bearer admin-token";
   },
 });
 ```
@@ -265,21 +265,21 @@ const limiter = rateLimiter({
 ### Alerting Integration
 
 ```typescript
-import { rateLimiter } from 'next-limitr';
+import { rateLimiter } from "next-limitr";
 
 // Set up rate limiting with alerting
 const limiter = rateLimiter({
   maxRequests: 10,
-  windowMs: '1m',
+  windowMs: "1m",
   alerting: {
     threshold: 3, // Alert after 3 breaches
-    windowMs: '5m', // Within a 5 minute window
+    windowMs: "5m", // Within a 5 minute window
     consoleLog: true, // Log to console
-    webhookUrl: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK', // Send to Slack
+    webhookUrl: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK", // Send to Slack
     handler: async (data) => {
       // Custom alert handling
       await sendEmail({
-        subject: 'Rate Limit Breach Detected',
+        subject: "Rate Limit Breach Detected",
         body: `IP ${data.key} has exceeded rate limits ${data.breachCount} times.`,
       });
     },
@@ -294,15 +294,15 @@ graph TD
     A[Choose Appropriate Limits] --> B{Environment Type}
     B -->|Development| C[Higher Limits]
     B -->|Production| D[Stricter Limits]
-    
+
     E[Storage Selection] --> F{Deployment Type}
     F -->|Single Instance| G[Memory Store]
     F -->|Multiple Instances| H[Redis Store]
-    
+
     I[Alerting Strategy] --> J{Traffic Pattern}
     J -->|Normal Web App| K[Higher Threshold]
     J -->|Critical API| L[Lower Threshold]
-    
+
     M[Key Generation] --> N{Security Needs}
     N -->|Basic| O[IP-based]
     N -->|Enhanced| P[IP + User Agent]
@@ -311,12 +311,12 @@ graph TD
 
 ### Recommended Rate Limits
 
-| API Type | Recommended Limits | Reasoning |
-|----------|-------------------|-----------|
-| Public API | 20-60 per minute | Balance between availability and protection |
-| Authenticated API | 100-300 per minute | Higher trust for authenticated users |
-| Critical Endpoints | 5-10 per minute | Extra protection for sensitive operations |
-| Static Content | No limits or very high | Optimized for CDN delivery |
+| API Type           | Recommended Limits     | Reasoning                                   |
+| ------------------ | ---------------------- | ------------------------------------------- |
+| Public API         | 20-60 per minute       | Balance between availability and protection |
+| Authenticated API  | 100-300 per minute     | Higher trust for authenticated users        |
+| Critical Endpoints | 5-10 per minute        | Extra protection for sensitive operations   |
+| Static Content     | No limits or very high | Optimized for CDN delivery                  |
 
 ## Troubleshooting
 
@@ -331,12 +331,12 @@ graph TD
 Enable debug mode for additional logging:
 
 ```typescript
-import { rateLimiter } from 'next-limitr';
+import { rateLimiter } from "next-limitr";
 
 const limiter = rateLimiter({
   maxRequests: 10,
-  windowMs: '1m',
-  debug: true // Enables detailed logging
+  windowMs: "1m",
+  debug: true, // Enables detailed logging
 });
 ```
 
@@ -347,19 +347,19 @@ The middleware is designed to be as lightweight as possible, with minimal impact
 ```mermaid
 gantt
     title Request Processing Timeline
-    dateFormat  s
-    axisFormat %S
-    
+    dateFormat  X
+    axisFormat %L ms
+
     section Without Rate Limiting
-    Request Processing : 0, 0.05
-    
+    Request Processing : 0, 50
+
     section With Memory Store
-    Rate Limit Check   : 0, 0.001
-    Request Processing : 0.001, 0.051
-    
+    Rate Limit Check   : 0, 1
+    Request Processing : 1, 51
+
     section With Redis Store
-    Rate Limit Check   : 0, 0.01
-    Request Processing : 0.01, 0.06
+    Rate Limit Check   : 0, 10
+    Request Processing : 10, 60
 ```
 
 ## Contributing

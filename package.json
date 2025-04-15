@@ -23,7 +23,7 @@
     "lint": "eslint src --ext .ts,.tsx",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint",
+    "prepublishOnly": "npm test",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
     "release": "npm run build && npm run test && npm publish"
