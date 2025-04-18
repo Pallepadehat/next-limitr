@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { Redis } from "ioredis";
+import type { NextRequest } from "next/server";
+import type { Redis } from "ioredis";
 
 export enum RateLimitStrategy {
-  FIXED_WINDOW = "fixed_window",
-  SLIDING_WINDOW = "sliding_window",
+  FIXED_WINDOW = "fixed-window",
+  SLIDING_WINDOW = "sliding-window",
   TOKEN_BUCKET = "token_bucket",
 }
 
@@ -19,16 +19,16 @@ export interface RedisConfig {
 
 export interface WebhookConfig {
   url: string;
-  method?: "GET" | "POST" | "PUT";
+  method?: string;
   headers?: Record<string, string>;
-  payload?: (req: NextRequest, usage: RateLimitUsage) => Record<string, any>;
+  payload?: (req: NextRequest, usage: RateLimitUsage) => any;
 }
 
 export interface RateLimitUsage {
-  limit: number;
+  used: number;
   remaining: number;
   reset: number;
-  used: number;
+  limit: number;
 }
 
 export interface RateLimitOptions {
@@ -44,16 +44,22 @@ export interface RateLimitOptions {
 
   // Webhook and alert options
   webhook?: WebhookConfig;
-  onLimitReached?: (req: NextRequest, usage: RateLimitUsage) => Promise<void>;
+  onLimitReached?: (
+    req: NextRequest,
+    usage: RateLimitUsage
+  ) => Promise<void> | void;
 
   // Custom handlers
-  handler?: (req: NextRequest, usage: RateLimitUsage) => Promise<NextResponse>;
+  handler?: (
+    req: NextRequest,
+    usage: RateLimitUsage
+  ) => Promise<NextResponseType> | NextResponseType;
   keyGenerator?: (req: NextRequest) => string;
-  getLimitForRequest?: (req: NextRequest) => Promise<number>;
+  getLimitForRequest?: (req: NextRequest) => Promise<number> | number;
 
   // Skip options
   skipIfAuthenticated?: boolean;
-  skip?: (req: NextRequest) => boolean | Promise<boolean>;
+  skip?: (req: NextRequest) => Promise<boolean> | boolean;
 }
 
 export interface RateLimitHeaders {
@@ -65,11 +71,18 @@ export interface RateLimitHeaders {
 
 export interface StorageAdapter {
   increment(key: string, windowMs: number): Promise<RateLimitUsage>;
+  decrement(key: string): Promise<void>;
   reset(key: string): Promise<void>;
   close(): Promise<void>;
 }
 
-export type NextApiHandler = (req: NextRequest) => Promise<NextResponse>;
+// Use type import to avoid direct dependency on NextResponse
+type NextResponseType = import("next/server").NextResponse;
+
+export type NextApiHandler<T = unknown> = (
+  req: NextRequest
+) => Promise<NextResponseType> | NextResponseType;
+
 export type RateLimitedHandler = (
   options: RateLimitOptions
-) => (handler: NextApiHandler) => NextApiHandler;
+) => <T>(handler: NextApiHandler<T>) => NextApiHandler<T>;

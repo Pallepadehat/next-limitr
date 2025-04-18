@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import {
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import type {
   RateLimitOptions,
   RateLimitHeaders,
   StorageAdapter,
-  RateLimitStrategy,
   NextApiHandler,
 } from "./types";
+import { RateLimitStrategy } from "./types";
 import { MemoryStorage } from "./storage/memory";
 import { RedisStorage } from "./storage/redis";
 import { WebhookHandler } from "./webhook";
@@ -41,7 +42,7 @@ export function withRateLimit(options: RateLimitOptions = {}) {
     webhookHandler = new WebhookHandler(finalOptions.webhook);
   }
 
-  return function rateLimit(handler: NextApiHandler): NextApiHandler {
+  return function rateLimit<T>(handler: NextApiHandler<T>): NextApiHandler<T> {
     return async function rateLimitedHandler(
       req: NextRequest
     ): Promise<NextResponse> {
@@ -91,28 +92,24 @@ export function withRateLimit(options: RateLimitOptions = {}) {
             return finalOptions.handler(req, { ...usage, limit });
           }
 
-          return new NextResponse("Too Many Requests", {
-            status: 429,
-            headers,
-          });
+          return NextResponse.json(
+            { error: "Too Many Requests" },
+            {
+              status: 429,
+              headers,
+            }
+          );
         }
 
         // Process the request normally
-        const response = await handler(req);
-
-        // Create a new response with the same body but with our headers
-        const newResponse = new NextResponse(response.body, {
-          status: response.status,
-          statusText: response.statusText,
-          headers: response.headers,
-        });
+        const response = await Promise.resolve(handler(req));
 
         // Add rate limit headers to the response
         Object.entries(headers).forEach(([key, value]) => {
-          newResponse.headers.set(key, value);
+          response.headers.set(key, value);
         });
 
-        return newResponse;
+        return response;
       } catch (error) {
         console.error("Rate limiting error:", error);
         // On error, allow the request to proceed

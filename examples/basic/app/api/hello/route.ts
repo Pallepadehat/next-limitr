@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { withRateLimit } from "next-limitr";
+import { NextRequest, NextResponse } from "next/server";
 
 export const GET = withRateLimit({
   limit: 10,
@@ -10,9 +10,6 @@ export const GET = withRateLimit({
       Authorization: "Bearer your-token",
     },
   },
-})(async (req) => {
-  return new NextResponse(JSON.stringify({ message: "Hello World!" }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+})((request: NextRequest) => {
+  return NextResponse.json({ message: "Hello World!" });
 });

@@ -43,6 +43,14 @@ export class MemoryStorage implements StorageAdapter {
     };
   }
 
+  async decrement(key: string): Promise<void> {
+    const record = this.storage.get(key);
+    if (record && record.count > 0) {
+      record.count -= 1;
+      this.storage.set(key, record);
+    }
+  }
+
   async reset(key: string): Promise<void> {
     this.storage.delete(key);
   }

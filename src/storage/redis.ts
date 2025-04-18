@@ -61,6 +61,13 @@ export class RedisStorage implements StorageAdapter {
     };
   }
 
+  async decrement(key: string): Promise<void> {
+    const exists = await this.client.exists(this.getKey(key));
+    if (exists) {
+      await this.client.decr(this.getKey(key));
+    }
+  }
+
   async reset(key: string): Promise<void> {
     await this.client.del(this.getKey(key));
   }
