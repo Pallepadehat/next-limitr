@@ -6,9 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "lint": "eslint . --ext .ts",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run lint",
     "publish-dry": "npm publish --dry-run",
     "publish": "npm publish"
   },
@@ -31,9 +29,6 @@
   "devDependencies": {
     "@types/node": "^20.17.30",
     "@types/react": "^18.3.20",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "eslint": "^8.57.1",
     "typescript": "^5.8.3"
   },
   "peerDependencies": {
